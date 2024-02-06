@@ -12,21 +12,17 @@ const MessageComponent = (props: Props) => {
   return (
     <div
       key={props.index}
-      className={`flex gap-x-4 items-center border rounded-md p-4 w-max max-w-[75%] ${
-        props.message.type === 'User' ? 'User text-right flex-row-reverse' : ''
+      className={`flex gap-x-4 max-w-[60%] ${
+        props.message.type === 'User' ? 'User ml-auto max-w-[40%]' : ''
       }`}
     >
-      {props.message.type === 'System' ? (
-        <div className="h-12 w-full min-w-12 max-w-12 rounded-full border flex items-center justify-center">
+      {props.message.type === 'System' && (
+        <div className="h-12 w-12 rounded-full border flex items-center justify-center shrink-0">
           AI
-        </div>
-      ) : (
-        <div className="h-12 w-full min-w-12 max-w-12 rounded-full border flex items-center justify-center">
-          You
         </div>
       )}
 
-      {props.message.message}
+      <div className="border rounded-md p-4">{props.message.message}</div>
     </div>
   )
 }
