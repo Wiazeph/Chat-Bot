@@ -3,6 +3,7 @@
 import { useState } from 'react'
 
 import MessageComponent from '@/components/message'
+import TypingComponent from '@/components/typing'
 
 export default function Home() {
   const [userOpenAIKey, setUserOpenAIKey] = useState<string>('') //
@@ -137,14 +138,7 @@ export default function Home() {
           <MessageComponent index={index} message={message} />
         ))}
 
-        {loading && (
-          <div className="flex gap-x-4 items-center">
-            <div className="h-10 w-full min-w-10 max-w-10 rounded-full border flex items-center justify-center">
-              AI
-            </div>
-            <div>Loading...</div>
-          </div>
-        )}
+        {loading && <TypingComponent />}
       </div>
 
       <form onSubmit={sendUserMessage} className="flex gap-x-4">
