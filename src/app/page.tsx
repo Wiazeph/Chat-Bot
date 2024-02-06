@@ -10,6 +10,7 @@ export default function Home() {
       message: 'You can start using me by typing the prompt of what I will be.',
     },
   ])
+  const [loading, setLoading] = useState<boolean>(false)
 
   const sendSystemPrompt = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -20,6 +21,8 @@ export default function Home() {
     setMessages([...messages, { type: 'User', message: userPromptMessage }])
 
     try {
+      setLoading(true)
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         body: JSON.stringify({
@@ -43,6 +46,8 @@ export default function Home() {
       ])
     } catch (error) {
       console.error('sendSystemPrompt - Error:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -55,6 +60,8 @@ export default function Home() {
     setMessages([...messages, { type: 'User', message: userMessage }])
 
     try {
+      setLoading(true)
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         body: JSON.stringify({
@@ -74,6 +81,8 @@ export default function Home() {
       ])
     } catch (error) {
       console.error('sendUserMessage - Error:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -126,6 +135,15 @@ export default function Home() {
             {message.message}
           </div>
         ))}
+
+        {loading && (
+          <div className="flex gap-x-4 items-center">
+            <div className="h-10 w-full min-w-10 max-w-10 rounded-full border flex items-center justify-center">
+              AI
+            </div>
+            <div>Loading...</div>
+          </div>
+        )}
       </div>
 
       <form onSubmit={sendUserMessage} className="flex gap-x-4">
