@@ -3,6 +3,7 @@
 import { useState } from 'react'
 
 export default function Home() {
+  const [userOpenAIKey, setUserOpenAIKey] = useState<string>('') //
   const [promptMessage, setPromptMessage] = useState<any>(null)
   const [messages, setMessages] = useState<any>([
     {
@@ -15,6 +16,9 @@ export default function Home() {
   const sendSystemPrompt = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
+    const userKey = e.currentTarget.openApiKey.value //
+    setUserOpenAIKey(userKey) //
+
     const userPromptMessage = e.currentTarget.prompt.value
     setPromptMessage(userPromptMessage)
 
@@ -26,6 +30,7 @@ export default function Home() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         body: JSON.stringify({
+          openAIApiKey: userKey, //
           prompt: userPromptMessage,
           messages: [
             ...messages.map((msg: any) => msg.message),
@@ -65,6 +70,7 @@ export default function Home() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         body: JSON.stringify({
+          openAIApiKey: userOpenAIKey, //
           messages: [...messages.map((msg: any) => msg.message), userMessage],
         }),
         headers: {
@@ -91,6 +97,16 @@ export default function Home() {
       <div className="text-center text-2xl font-medium">Chat Bot</div>
 
       <form onSubmit={sendSystemPrompt} className="flex gap-x-4">
+        {/*  */}
+        <input
+          type="text"
+          name="openApiKey"
+          placeholder="OpenAI API Key"
+          className="input"
+          disabled={promptMessage !== null ? true : false}
+        />
+        {/*  */}
+
         <input
           type="text"
           name="prompt"

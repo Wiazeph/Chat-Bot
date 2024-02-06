@@ -10,15 +10,17 @@ export const runtime = 'edge'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const messages = body.messages ?? []
+    const apiKey = body.openAIApiKey //
     const promptInput = body.prompt
+    const messages = body.messages ?? []
 
     const promptText = messages.join('\n') + '\n' + promptInput
     const prompt = PromptTemplate.fromTemplate(promptText)
 
     const model = new ChatOpenAI({
       temperature: 0.9,
-      openAIApiKey: process.env.NEXT_PUBLIC_OPEN_AI_API_KEY!,
+      openAIApiKey: apiKey, //
+      // openAIApiKey: process.env.NEXT_PUBLIC_OPEN_AI_API_KEY!,
       maxTokens: 175,
     })
 
