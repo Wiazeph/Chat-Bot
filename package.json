@@ -11,6 +11,7 @@
   "dependencies": {
     "@langchain/core": "^0.1.21",
     "@langchain/openai": "^0.0.14",
+    "@radix-ui/react-scroll-area": "^1.0.5",
     "@radix-ui/react-slot": "^1.0.2",
     "ai": "^2.2.33",
     "class-variance-authority": "^0.7.0",

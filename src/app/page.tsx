@@ -4,6 +4,7 @@ import { useState } from 'react'
 
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 import MessageComponent from '@/components/message'
 import TypingComponent from '@/components/typing'
@@ -136,13 +137,15 @@ export default function Home() {
         dialect.
       </div>
 
-      <div className="Messages flex flex-col gap-y-6 border rounded-md h-full p-4 overflow-y-auto">
-        {messages.map((message: any, index: number) => (
-          <MessageComponent index={index} message={message} />
-        ))}
+      <ScrollArea className="h-full rounded-md border p-4">
+        <div className="flex flex-col gap-y-6">
+          {messages.map((message: any, index: number) => (
+            <MessageComponent index={index} message={message} />
+          ))}
 
-        {loading && <TypingComponent />}
-      </div>
+          {loading && <TypingComponent />}
+        </div>
+      </ScrollArea>
 
       <form onSubmit={sendUserMessage} className="flex gap-x-4">
         <Input
