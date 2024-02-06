@@ -1,6 +1,82 @@
-import Image from 'next/image'
+'use client'
+
+import { useState } from 'react'
 
 export default function Home() {
+  const [promptMessage, setPromptMessage] = useState<any>(null)
+  const [messages, setMessages] = useState<any>([
+    {
+      type: 'System',
+      message: 'You can start using me by typing the prompt of what I will be.',
+    },
+  ])
+
+  const sendSystemPrompt = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    const userPromptMessage = e.currentTarget.prompt.value
+    setPromptMessage(userPromptMessage)
+
+    setMessages([...messages, { type: 'User', message: userPromptMessage }])
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        body: JSON.stringify({
+          prompt: userPromptMessage,
+          messages: [
+            ...messages.map((msg: any) => msg.message),
+            userPromptMessage,
+          ],
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const data = await response.text()
+
+      setMessages([
+        ...messages,
+        { type: 'User', message: userPromptMessage },
+        { type: 'System', message: data },
+      ])
+    } catch (error) {
+      console.error('sendSystemPrompt - Error:', error)
+    }
+  }
+
+  const sendUserMessage = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    const userMessage = e.currentTarget.message.value
+    e.currentTarget.message.value = ''
+
+    setMessages([...messages, { type: 'User', message: userMessage }])
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        body: JSON.stringify({
+          messages: [...messages.map((msg: any) => msg.message), userMessage],
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const data = await response.text()
+
+      setMessages([
+        ...messages,
+        { type: 'User', message: userMessage },
+        { type: 'System', message: data },
+      ])
+    } catch (error) {
+      console.error('sendUserMessage - Error:', error)
+    }
+  }
+
   return (
     <div className="p-6 w-full max-w-[95%] h-full max-h-[95%] flex flex-col gap-y-6 rounded-xl bg-white border">
       <div className="text-center text-2xl font-medium">Chat Bot</div>
