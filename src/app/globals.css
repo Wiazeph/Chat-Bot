@@ -21,3 +21,12 @@
     @apply p-8 h-dvh flex items-center justify-center bg-zinc-100 text-zinc-950;
   }
 }
+
+@layer components {
+  .input {
+    @apply w-full h-10 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm placeholder:text-zinc-500 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .button {
+    @apply h-10 px-6 whitespace-nowrap bg-zinc-900 text-white hover:bg-zinc-700 rounded-md text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50;
+  }
+}
