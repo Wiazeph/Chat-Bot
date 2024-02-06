@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 
+import MessageComponent from '@/components/message'
+
 export default function Home() {
   const [userOpenAIKey, setUserOpenAIKey] = useState<string>('') //
   const [promptMessage, setPromptMessage] = useState<any>(null)
@@ -93,7 +95,7 @@ export default function Home() {
   }
 
   return (
-    <div className="p-6 w-full max-w-[95%] h-full max-h-[95%] flex flex-col gap-y-6 rounded-xl bg-white border">
+    <div className="p-6 w-full max-w-[95%] h-full max-h-[95%] flex flex-col gap-y-6 rounded-md bg-white border">
       <div className="text-center text-2xl font-medium">Chat Bot</div>
 
       <form onSubmit={sendSystemPrompt} className="flex gap-x-4">
@@ -130,26 +132,9 @@ export default function Home() {
         dialect.
       </div>
 
-      <div className="Messages flex flex-col gap-y-6 border rounded-xl h-full p-4 overflow-y-auto">
+      <div className="Messages flex flex-col gap-y-6 border rounded-md h-full p-4 overflow-y-auto">
         {messages.map((message: any, index: number) => (
-          <div
-            key={index}
-            className={`flex gap-x-4 items-center ${
-              message.type === 'User' ? 'User text-right flex-row-reverse' : ''
-            }`}
-          >
-            {message.type === 'System' ? (
-              <div className="h-10 w-full min-w-10 max-w-10 rounded-full border flex items-center justify-center">
-                AI
-              </div>
-            ) : (
-              <div className="h-10 w-full min-w-10 max-w-10 rounded-full border flex items-center justify-center">
-                You
-              </div>
-            )}
-
-            {message.message}
-          </div>
+          <MessageComponent index={index} message={message} />
         ))}
 
         {loading && (

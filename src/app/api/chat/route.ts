@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { StreamingTextResponse } from 'ai'
 
+import { StreamingTextResponse } from 'ai'
 import { ChatOpenAI } from '@langchain/openai'
 import { PromptTemplate } from '@langchain/core/prompts'
 import { StringOutputParser } from '@langchain/core/output_parsers'
