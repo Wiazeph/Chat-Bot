@@ -2,6 +2,9 @@
 
 import { useState } from 'react'
 
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+
 import MessageComponent from '@/components/message'
 import TypingComponent from '@/components/typing'
 
@@ -101,7 +104,7 @@ export default function Home() {
 
       <form onSubmit={sendSystemPrompt} className="flex gap-x-4">
         {/*  */}
-        <input
+        <Input
           type="text"
           name="openApiKey"
           placeholder="OpenAI API Key"
@@ -110,7 +113,7 @@ export default function Home() {
         />
         {/*  */}
 
-        <input
+        <Input
           type="text"
           name="prompt"
           placeholder="Prompt"
@@ -118,13 +121,13 @@ export default function Home() {
           disabled={promptMessage !== null ? true : false}
         />
 
-        <button
+        <Button
           type="submit"
           className="button"
           disabled={promptMessage !== null ? true : false}
         >
-          Set Prompt
-        </button>
+          Send Prompt
+        </Button>
       </form>
 
       <div className="text-sm text-center">
@@ -142,7 +145,7 @@ export default function Home() {
       </div>
 
       <form onSubmit={sendUserMessage} className="flex gap-x-4">
-        <input
+        <Input
           type="text"
           name="message"
           placeholder="Message"
@@ -150,13 +153,14 @@ export default function Home() {
           disabled={promptMessage !== null ? false : true}
         />
 
-        <button
+        <Button
+          variant="outline"
           type="submit"
           className="button"
           disabled={promptMessage !== null ? false : true}
         >
           Send Message
-        </button>
+        </Button>
       </form>
     </div>
   )
