@@ -1,21 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { StreamingTextResponse } from 'ai'
+import { Message as VercelChatMessage, StreamingTextResponse } from 'ai'
 import { ChatOpenAI } from '@langchain/openai'
 import { PromptTemplate } from '@langchain/core/prompts'
 import { StringOutputParser } from '@langchain/core/output_parsers'
 
 export const runtime = 'edge'
 
+const formatMessage = (message: VercelChatMessage) => {
+  return `${message.role}: ${message.content}`
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const apiKey = body.openAIApiKey
-    const promptInput = body.prompt
-    const messages = body.messages ?? []
 
-    const promptText = messages.join('\n') + '\n' + promptInput
-    const prompt = PromptTemplate.fromTemplate(promptText)
+    const apiKey = body.openAIApiKey
+
+    const promptInput = body.prompt
+
+    const messages = body.messages ?? []
+    const formattedPreviousMessages = messages.slice(0, -1).map(formatMessage)
+    const messageContent = messages[messages.length - 1].content
+
+    const TEMPLATE = `{prompt}
+
+Current conversation:
+{chat_history}
+
+User: {input}
+AI:`
+    const prompt = PromptTemplate.fromTemplate(TEMPLATE)
 
     const model = new ChatOpenAI({
       temperature: 0.9,
@@ -30,7 +45,8 @@ export async function POST(req: NextRequest) {
 
     const stream = await chain.stream({
       prompt: promptInput,
-      input: messages,
+      chat_history: formattedPreviousMessages.join('\n'),
+      input: messageContent,
     })
 
     return new StreamingTextResponse(stream)

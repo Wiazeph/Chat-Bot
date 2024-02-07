@@ -10,28 +10,39 @@ import { cn } from '@/lib/utils'
 import MessageComponent from '@/components/message'
 import TypingComponent from '@/components/typing'
 
+import { useChat } from 'ai/react'
+import type { AgentStep } from 'langchain/schema'
+
 export default function Home() {
+  const { messages, input, handleInputChange, setMessages } = useChat()
+
   const [userOpenAIKey, setUserOpenAIKey] = useState<string>('')
-  const [promptMessage, setPromptMessage] = useState<any>(null)
-  const [messages, setMessages] = useState<any>([
-    {
-      type: 'System',
-      message: 'You can start using me by typing the prompt of what I will be.',
-    },
-  ])
-  const [loading, setLoading] = useState<boolean>(false)
-
-  //////////////////////////////////////////
-
   const [oaiKeyValueDisplayed, setOaiKeyValueDisplayed] = useState<any>('')
   const [isKeyValid, setIsKeyValid] = useState<boolean>(false)
   const [validatingKey, setValidatingKey] = useState<boolean>(false)
+  const [inputDisplay, setInputDisplay] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(false)
+  const [promptMessage, setPromptMessage] = useState<boolean>(false)
+
+  useEffect(() => {
+    console.log('messages:', messages)
+  }, [messages])
+
+  useEffect(() => {
+    setMessages([
+      ...messages,
+      {
+        id: '0',
+        role: 'system',
+        content:
+          'You can start using me by typing the prompt of what I will be.',
+      },
+    ])
+  }, [])
 
   useEffect(() => {
     setOaiKeyValueDisplayed(userOpenAIKey)
-  }, [userOpenAIKey])
 
-  useEffect(() => {
     if (userOpenAIKey.length > 49) {
       setValidatingKey(true)
       fetch(`/api/test_api?key=${userOpenAIKey}`)
@@ -51,15 +62,19 @@ export default function Home() {
     }
   }, [userOpenAIKey])
 
-  //////////////////////////////////////////
-
-  const sendSystemPrompt = async (e: React.FormEvent<HTMLFormElement>) => {
+  const sendPrompt = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    const userPromptMessage = e.currentTarget.prompt.value
-    setPromptMessage(userPromptMessage)
+    const systemPromptMessage = messages.concat({
+      id: messages.length.toString(),
+      role: 'user',
+      content: input,
+    })
 
-    setMessages([...messages, { type: 'User', message: userPromptMessage }])
+    setMessages(systemPromptMessage)
+
+    setPromptMessage(true)
+    setInputDisplay(true)
 
     try {
       setLoading(true)
@@ -68,26 +83,50 @@ export default function Home() {
         method: 'POST',
         body: JSON.stringify({
           openAIApiKey: userOpenAIKey,
-          prompt: userPromptMessage,
-          messages: [
-            ...messages.map((msg: any) => msg.message),
-            userPromptMessage,
-          ],
+          prompt: input,
+          messages: systemPromptMessage,
         }),
         headers: {
           'Content-Type': 'application/json',
         },
       })
 
-      const data = await response.text()
+      const data = await response.json()
 
-      setMessages([
-        ...messages,
-        { type: 'User', message: userPromptMessage },
-        { type: 'System', message: data },
-      ])
+      if (response.status === 200) {
+        const intermediateStepMessages = (data.intermediate_steps ?? []).map(
+          (intermediateStep: AgentStep, i: number) => {
+            return {
+              id: (systemPromptMessage.length + i).toString(),
+              content: JSON.stringify(intermediateStep),
+              role: 'system',
+            }
+          }
+        )
+
+        const newMessages = systemPromptMessage
+        for (const message of intermediateStepMessages) {
+          newMessages.push(message)
+          setMessages([...newMessages])
+        }
+
+        setMessages([
+          ...newMessages,
+          {
+            id: (
+              newMessages.length + intermediateStepMessages.length
+            ).toString(),
+            role: 'system',
+            content: data.output,
+          },
+        ])
+      } else {
+        if (data.error) {
+          throw new Error(data.error)
+        }
+      }
     } catch (error) {
-      console.error('sendSystemPrompt - Error:', error)
+      console.error('sendPrompt - Error:', error)
     } finally {
       setLoading(false)
     }
@@ -96,10 +135,17 @@ export default function Home() {
   const sendUserMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    const userMessage = e.currentTarget.message.value
-    e.currentTarget.message.value = ''
+    if (!messages.length) {
+      await new Promise((resolve) => setTimeout(resolve, 300))
+    }
 
-    setMessages([...messages, { type: 'User', message: userMessage }])
+    const userMessage = messages.concat({
+      id: messages.length.toString(),
+      role: 'user',
+      content: input,
+    })
+
+    setMessages(userMessage)
 
     try {
       setLoading(true)
@@ -108,20 +154,51 @@ export default function Home() {
         method: 'POST',
         body: JSON.stringify({
           openAIApiKey: userOpenAIKey,
-          messages: [...messages.map((msg: any) => msg.message), userMessage],
+          messages: userMessage,
         }),
         headers: {
           'Content-Type': 'application/json',
         },
       })
 
-      const data = await response.text()
+      const data = await response.json()
 
-      setMessages([
-        ...messages,
-        { type: 'User', message: userMessage },
-        { type: 'System', message: data },
-      ])
+      if (response.status === 200) {
+        const intermediateStepMessages = (data.intermediate_steps ?? []).map(
+          (intermediateStep: AgentStep, i: number) => {
+            return {
+              id: (userMessage.length + i).toString(),
+              role: 'system',
+
+              content: JSON.stringify(intermediateStep),
+            }
+          }
+        )
+
+        const newMessages = userMessage
+        for (const message of intermediateStepMessages) {
+          newMessages.push(message)
+          setMessages([...newMessages])
+          await new Promise((resolve) =>
+            setTimeout(resolve, 1000 + Math.random() * 1000)
+          )
+        }
+        setMessages([
+          ...newMessages,
+          {
+            id: (
+              newMessages.length + intermediateStepMessages.length
+            ).toString(),
+            role: 'system',
+
+            content: data.output,
+          },
+        ])
+      } else {
+        if (data.error) {
+          throw new Error(data.error)
+        }
+      }
     } catch (error) {
       console.error('sendUserMessage - Error:', error)
     } finally {
@@ -133,38 +210,37 @@ export default function Home() {
     <div className="p-6 w-full max-w-[95%] h-full max-h-[95%] flex flex-col gap-y-6 rounded-md bg-white border">
       <div className="text-center text-2xl font-medium">Chat Bot</div>
 
-      <form onSubmit={sendSystemPrompt} className="flex gap-x-4">
-        <Input
-          type="text"
-          name="openApiKey"
-          placeholder="OpenAI API Key"
-          className={cn(
-            isKeyValid
-              ? 'border-green-400 bg-green-400'
-              : 'border-red-300 bg-red-300',
-            validatingKey && 'validatingKey'
-          )}
-          value={oaiKeyValueDisplayed}
-          onChange={(e) => setUserOpenAIKey(e.target.value)}
-          disabled={isKeyValid || promptMessage !== null ? true : false}
-        />
+      <Input
+        type="text"
+        name="openApiKey"
+        placeholder="OpenAI API Key"
+        className={cn(
+          isKeyValid
+            ? 'border-green-400 bg-green-400'
+            : 'border-red-300 bg-red-300',
+          validatingKey && 'validatingKey'
+        )}
+        value={oaiKeyValueDisplayed}
+        onChange={(e) => setUserOpenAIKey(e.target.value)}
+        disabled={isKeyValid ? true : false}
+      />
 
+      <form onSubmit={sendPrompt} className="flex gap-x-4">
         <Input
           type="text"
           name="prompt"
           placeholder="Prompt"
-          disabled={promptMessage !== null ? true : false}
+          disabled={!isKeyValid || inputDisplay}
+          value={!inputDisplay ? input : ''}
+          onChange={handleInputChange}
         />
 
-        <Button
-          type="submit"
-          disabled={!isKeyValid || promptMessage !== null ? true : false}
-        >
+        <Button type="submit" disabled={!isKeyValid || !input}>
           Send Prompt
         </Button>
       </form>
 
-      <div className="text-sm text-center flex flex-col items-center gap-y-2 border rounded-md p-4">
+      <div className="Sample-Prompts text-sm text-center flex flex-col items-center gap-y-2 border rounded-md p-4">
         <div className="flex items-center gap-x-2">
           <div className="font-medium select-none">Sample Prompt:</div>
           <div>You are an ai assistant.</div>
@@ -179,7 +255,7 @@ export default function Home() {
         </div>
       </div>
 
-      <ScrollArea className="h-full rounded-md border p-4">
+      <ScrollArea className="Messages h-full rounded-md border p-4">
         <div className="flex flex-col gap-y-6">
           {messages.map((message: any, index: number) => (
             <MessageComponent index={index} message={message} />
@@ -194,19 +270,17 @@ export default function Home() {
         />
       </ScrollArea>
 
-      <form onSubmit={sendUserMessage} className="flex gap-x-4">
+      <form onSubmit={sendUserMessage} className="Send-Message flex gap-x-4">
         <Input
           type="text"
           name="message"
           placeholder="Message"
-          disabled={promptMessage !== null ? false : true}
+          disabled={!promptMessage}
+          value={input}
+          onChange={handleInputChange}
         />
 
-        <Button
-          variant="outline"
-          type="submit"
-          disabled={promptMessage !== null ? false : true}
-        >
+        <Button variant="outline" type="submit" disabled={!promptMessage}>
           Send Message
         </Button>
       </form>
