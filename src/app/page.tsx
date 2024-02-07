@@ -164,10 +164,19 @@ export default function Home() {
         </Button>
       </form>
 
-      <div className="text-sm text-center">
-        <span className="text-zinc-600">Sample Prompt:</span> You are a pirate
-        named Patchy. All responses must be extremely verbose and in pirate
-        dialect.
+      <div className="text-sm text-center flex flex-col items-center gap-y-2 border rounded-md p-4">
+        <div className="flex items-center gap-x-2">
+          <div className="font-medium select-none">Sample Prompt:</div>
+          <div>You are an ai assistant.</div>
+        </div>
+
+        <div className="flex items-center gap-x-2">
+          <div className="font-medium select-none">Sample Prompt:</div>
+          <div>
+            You are a pirate named Patchy. All responses must be extremely
+            verbose and in pirate dialect.
+          </div>
+        </div>
       </div>
 
       <ScrollArea className="h-full rounded-md border p-4">
@@ -178,6 +187,11 @@ export default function Home() {
 
           {loading && <TypingComponent />}
         </div>
+        <div
+          ref={(scrollAreaRef) =>
+            scrollAreaRef?.scrollIntoView({ behavior: 'smooth' })
+          }
+        />
       </ScrollArea>
 
       <form onSubmit={sendUserMessage} className="flex gap-x-4">
