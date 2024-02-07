@@ -29,12 +29,8 @@ export default function Home() {
   const [validatingKey, setValidatingKey] = useState<boolean>(false)
 
   useEffect(() => {
-    if (oaiKeyFocus) {
-      setOaiKeyValueDisplayed(userOpenAIKey) // If the input is focused, show the real key
-    } else {
-      setOaiKeyValueDisplayed(userOpenAIKey.replace(/./g, '*')) // If the input is not focused, replace all characters with *
-    }
-  }, [userOpenAIKey, oaiKeyFocus])
+    setOaiKeyValueDisplayed(userOpenAIKey)
+  }, [userOpenAIKey])
 
   useEffect(() => {
     if (userOpenAIKey.length > 49) {
@@ -45,6 +41,9 @@ export default function Home() {
           setIsKeyValid(data.status)
           if (data.status) {
             setValidatingKey(false)
+            setOaiKeyValueDisplayed(userOpenAIKey.replace(/./g, '*'))
+          } else {
+            setOaiKeyValueDisplayed(userOpenAIKey)
           }
         })
         .catch((error) => console.error('Key Validation - Error:', error))
@@ -148,8 +147,6 @@ export default function Home() {
           )}
           value={oaiKeyValueDisplayed}
           onChange={(e) => setUserOpenAIKey(e.target.value)}
-          onFocus={() => setOaiKeyFocus(true)}
-          onBlur={() => setOaiKeyFocus(false)}
           disabled={isKeyValid || promptMessage !== null ? true : false}
         />
 
