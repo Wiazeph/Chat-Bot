@@ -23,7 +23,6 @@ export default function Home() {
 
   //////////////////////////////////////////
 
-  const [oaiKeyFocus, setOaiKeyFocus] = useState<boolean>(false)
   const [oaiKeyValueDisplayed, setOaiKeyValueDisplayed] = useState<any>('')
   const [isKeyValid, setIsKeyValid] = useState<boolean>(false)
   const [validatingKey, setValidatingKey] = useState<boolean>(false)
