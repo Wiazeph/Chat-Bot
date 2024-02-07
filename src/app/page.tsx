@@ -86,6 +86,9 @@ export default function Home() {
           prompt: promptMessage,
           messages: systemPromptMessage,
         }),
+        headers: {
+          'Content-Type': 'text/plain',
+        },
       })
 
       const data = await response.text()
@@ -129,6 +132,9 @@ export default function Home() {
           openAIApiKey: userOpenAIKey,
           messages: userMessage,
         }),
+        headers: {
+          'Content-Type': 'text/plain',
+        },
       })
 
       const data = await response.text()
