@@ -1,16 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { cn } from '@/lib/utils'
 
 import MessageComponent from '@/components/message'
 import TypingComponent from '@/components/typing'
 
 export default function Home() {
-  const [userOpenAIKey, setUserOpenAIKey] = useState<string>('') //
+  const [userOpenAIKey, setUserOpenAIKey] = useState<string>('')
   const [promptMessage, setPromptMessage] = useState<any>(null)
   const [messages, setMessages] = useState<any>([
     {
@@ -20,11 +21,37 @@ export default function Home() {
   ])
   const [loading, setLoading] = useState<boolean>(false)
 
+  //////////////////////////////////////////
+
+  const [oaiKeyFocus, setOaiKeyFocus] = useState<any>(false)
+  const [oaiKeyValueDisplayed, setOaiKeyValueDisplayed] = useState<any>('')
+  const [isKeyValid, setIsKeyValid] = useState<any>(false)
+
+  useEffect(() => {
+    if (oaiKeyFocus) {
+      setOaiKeyValueDisplayed(userOpenAIKey) // If the input is focused, show the real key
+    } else {
+      setOaiKeyValueDisplayed(userOpenAIKey.replace(/./g, '*')) // If the input is not focused, replace all characters with *
+    }
+  }, [userOpenAIKey, oaiKeyFocus])
+
+  useEffect(() => {
+    if (userOpenAIKey.length > 49) {
+      fetch(`/api/test_api?key=${userOpenAIKey}`)
+        .then((response) => response.json())
+        .then((data) => {
+          setIsKeyValid(data.status)
+        })
+        .catch((error) => console.error('Key Validation - Error:', error))
+    } else {
+      setIsKeyValid(false)
+    }
+  }, [userOpenAIKey])
+
+  //////////////////////////////////////////
+
   const sendSystemPrompt = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-
-    const userKey = e.currentTarget.openApiKey.value //
-    setUserOpenAIKey(userKey) //
 
     const userPromptMessage = e.currentTarget.prompt.value
     setPromptMessage(userPromptMessage)
@@ -37,7 +64,7 @@ export default function Home() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         body: JSON.stringify({
-          openAIApiKey: userKey, //
+          openAIApiKey: userOpenAIKey,
           prompt: userPromptMessage,
           messages: [
             ...messages.map((msg: any) => msg.message),
@@ -77,7 +104,7 @@ export default function Home() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         body: JSON.stringify({
-          openAIApiKey: userOpenAIKey, //
+          openAIApiKey: userOpenAIKey,
           messages: [...messages.map((msg: any) => msg.message), userMessage],
         }),
         headers: {
@@ -104,28 +131,32 @@ export default function Home() {
       <div className="text-center text-2xl font-medium">Chat Bot</div>
 
       <form onSubmit={sendSystemPrompt} className="flex gap-x-4">
-        {/*  */}
         <Input
           type="text"
           name="openApiKey"
           placeholder="OpenAI API Key"
-          className="input"
-          disabled={promptMessage !== null ? true : false}
+          className={cn(
+            isKeyValid
+              ? 'border-green-400 bg-green-400'
+              : 'border-red-300 bg-red-300'
+          )}
+          value={oaiKeyValueDisplayed}
+          onChange={(e) => setUserOpenAIKey(e.target.value)}
+          onFocus={() => setOaiKeyFocus(true)}
+          onBlur={() => setOaiKeyFocus(false)}
+          disabled={isKeyValid || promptMessage !== null ? true : false}
         />
-        {/*  */}
 
         <Input
           type="text"
           name="prompt"
           placeholder="Prompt"
-          className="input"
           disabled={promptMessage !== null ? true : false}
         />
 
         <Button
           type="submit"
-          className="button"
-          disabled={promptMessage !== null ? true : false}
+          disabled={!isKeyValid || promptMessage !== null ? true : false}
         >
           Send Prompt
         </Button>
@@ -152,14 +183,12 @@ export default function Home() {
           type="text"
           name="message"
           placeholder="Message"
-          className="input"
           disabled={promptMessage !== null ? false : true}
         />
 
         <Button
           variant="outline"
           type="submit"
-          className="button"
           disabled={promptMessage !== null ? false : true}
         >
           Send Message
