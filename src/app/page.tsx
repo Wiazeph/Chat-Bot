@@ -11,7 +11,6 @@ import MessageComponent from '@/components/message'
 import TypingComponent from '@/components/typing'
 
 import { useChat } from 'ai/react'
-import type { AgentStep } from 'langchain/schema'
 
 export default function Home() {
   const { messages, input, handleInputChange, setMessages, setInput } =
@@ -24,10 +23,6 @@ export default function Home() {
   const [promptMessage, setPromptMessage] = useState<any>('')
   const [display, setDisplay] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
-
-  useEffect(() => {
-    console.log('messages:', messages)
-  }, [messages])
 
   useEffect(() => {
     setMessages([
