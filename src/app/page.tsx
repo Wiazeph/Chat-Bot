@@ -23,9 +23,10 @@ export default function Home() {
 
   //////////////////////////////////////////
 
-  const [oaiKeyFocus, setOaiKeyFocus] = useState<any>(false)
+  const [oaiKeyFocus, setOaiKeyFocus] = useState<boolean>(false)
   const [oaiKeyValueDisplayed, setOaiKeyValueDisplayed] = useState<any>('')
-  const [isKeyValid, setIsKeyValid] = useState<any>(false)
+  const [isKeyValid, setIsKeyValid] = useState<boolean>(false)
+  const [validatingKey, setValidatingKey] = useState<boolean>(false)
 
   useEffect(() => {
     if (oaiKeyFocus) {
@@ -37,10 +38,14 @@ export default function Home() {
 
   useEffect(() => {
     if (userOpenAIKey.length > 49) {
+      setValidatingKey(true)
       fetch(`/api/test_api?key=${userOpenAIKey}`)
         .then((response) => response.json())
         .then((data) => {
           setIsKeyValid(data.status)
+          if (data.status) {
+            setValidatingKey(false)
+          }
         })
         .catch((error) => console.error('Key Validation - Error:', error))
     } else {
@@ -138,7 +143,8 @@ export default function Home() {
           className={cn(
             isKeyValid
               ? 'border-green-400 bg-green-400'
-              : 'border-red-300 bg-red-300'
+              : 'border-red-300 bg-red-300',
+            validatingKey && 'validatingKey'
           )}
           value={oaiKeyValueDisplayed}
           onChange={(e) => setUserOpenAIKey(e.target.value)}

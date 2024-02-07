@@ -75,8 +75,37 @@
   }
 }
 
+/* */
+
 @layer base {
   body {
     @apply p-8 h-dvh flex items-center justify-center;
+  }
+}
+
+.validatingKey {
+  background: linear-gradient(
+    to right,
+    rgb(182, 182, 182),
+    rgb(160, 160, 160),
+    rgb(146, 146, 146),
+    rgb(135, 135, 135),
+    rgb(146, 146, 146),
+    rgb(160, 160, 160),
+    rgb(182, 182, 182)
+  );
+  background-size: 200% 100%;
+  animation: validatingKey 2s infinite ease-in-out;
+}
+
+@keyframes validatingKey {
+  0% {
+    background-position: 0 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
   }
 }
