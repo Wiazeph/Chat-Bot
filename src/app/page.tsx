@@ -14,15 +14,16 @@ import { useChat } from 'ai/react'
 import type { AgentStep } from 'langchain/schema'
 
 export default function Home() {
-  const { messages, input, handleInputChange, setMessages } = useChat()
+  const { messages, input, handleInputChange, setMessages, setInput } =
+    useChat()
 
   const [userOpenAIKey, setUserOpenAIKey] = useState<string>('')
-  const [oaiKeyValueDisplayed, setOaiKeyValueDisplayed] = useState<any>('')
   const [isKeyValid, setIsKeyValid] = useState<boolean>(false)
+  const [oaiKeyValueDisplayed, setOaiKeyValueDisplayed] = useState<any>('')
   const [validatingKey, setValidatingKey] = useState<boolean>(false)
-  const [inputDisplay, setInputDisplay] = useState<boolean>(false)
+  const [promptMessage, setPromptMessage] = useState<any>('')
+  const [display, setDisplay] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
-  const [promptMessage, setPromptMessage] = useState<boolean>(false)
 
   useEffect(() => {
     console.log('messages:', messages)
@@ -68,13 +69,12 @@ export default function Home() {
     const systemPromptMessage = messages.concat({
       id: messages.length.toString(),
       role: 'user',
-      content: input,
+      content: promptMessage,
     })
 
     setMessages(systemPromptMessage)
 
-    setPromptMessage(true)
-    setInputDisplay(true)
+    setDisplay(true)
 
     try {
       setLoading(true)
@@ -83,7 +83,7 @@ export default function Home() {
         method: 'POST',
         body: JSON.stringify({
           openAIApiKey: userOpenAIKey,
-          prompt: input,
+          prompt: promptMessage,
           messages: systemPromptMessage,
         }),
         headers: {
@@ -135,9 +135,7 @@ export default function Home() {
   const sendUserMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    if (!messages.length) {
-      await new Promise((resolve) => setTimeout(resolve, 300))
-    }
+    setInput('')
 
     const userMessage = messages.concat({
       id: messages.length.toString(),
@@ -179,9 +177,6 @@ export default function Home() {
         for (const message of intermediateStepMessages) {
           newMessages.push(message)
           setMessages([...newMessages])
-          await new Promise((resolve) =>
-            setTimeout(resolve, 1000 + Math.random() * 1000)
-          )
         }
         setMessages([
           ...newMessages,
@@ -230,12 +225,15 @@ export default function Home() {
           type="text"
           name="prompt"
           placeholder="Prompt"
-          disabled={!isKeyValid || inputDisplay}
-          value={!inputDisplay ? input : ''}
-          onChange={handleInputChange}
+          disabled={!isKeyValid || display}
+          value={promptMessage}
+          onChange={(e) => setPromptMessage(e.target.value)}
         />
 
-        <Button type="submit" disabled={!isKeyValid || !input}>
+        <Button
+          type="submit"
+          disabled={!isKeyValid || promptMessage === '' || display}
+        >
           Send Prompt
         </Button>
       </form>
@@ -275,12 +273,12 @@ export default function Home() {
           type="text"
           name="message"
           placeholder="Message"
-          disabled={!promptMessage}
+          disabled={!display}
           value={input}
           onChange={handleInputChange}
         />
 
-        <Button variant="outline" type="submit" disabled={!promptMessage}>
+        <Button variant="outline" type="submit" disabled={!display}>
           Send Message
         </Button>
       </form>
