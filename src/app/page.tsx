@@ -86,44 +86,19 @@ export default function Home() {
           prompt: promptMessage,
           messages: systemPromptMessage,
         }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
       })
 
-      const data = await response.json()
+      const data = await response.text()
 
       if (response.status === 200) {
-        const intermediateStepMessages = (data.intermediate_steps ?? []).map(
-          (intermediateStep: AgentStep, i: number) => {
-            return {
-              id: (systemPromptMessage.length + i).toString(),
-              content: JSON.stringify(intermediateStep),
-              role: 'system',
-            }
-          }
-        )
-
-        const newMessages = systemPromptMessage
-        for (const message of intermediateStepMessages) {
-          newMessages.push(message)
-          setMessages([...newMessages])
-        }
-
         setMessages([
-          ...newMessages,
+          ...systemPromptMessage,
           {
-            id: (
-              newMessages.length + intermediateStepMessages.length
-            ).toString(),
+            id: (messages.length + 1).toString(),
             role: 'system',
-            content: data.output,
+            content: data,
           },
         ])
-      } else {
-        if (data.error) {
-          throw new Error(data.error)
-        }
       }
     } catch (error) {
       console.error('sendPrompt - Error:', error)
@@ -154,45 +129,19 @@ export default function Home() {
           openAIApiKey: userOpenAIKey,
           messages: userMessage,
         }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
       })
 
-      const data = await response.json()
+      const data = await response.text()
 
       if (response.status === 200) {
-        const intermediateStepMessages = (data.intermediate_steps ?? []).map(
-          (intermediateStep: AgentStep, i: number) => {
-            return {
-              id: (userMessage.length + i).toString(),
-              role: 'system',
-
-              content: JSON.stringify(intermediateStep),
-            }
-          }
-        )
-
-        const newMessages = userMessage
-        for (const message of intermediateStepMessages) {
-          newMessages.push(message)
-          setMessages([...newMessages])
-        }
         setMessages([
-          ...newMessages,
+          ...userMessage,
           {
-            id: (
-              newMessages.length + intermediateStepMessages.length
-            ).toString(),
+            id: (messages.length + 1).toString(),
             role: 'system',
-
-            content: data.output,
+            content: data,
           },
         ])
-      } else {
-        if (data.error) {
-          throw new Error(data.error)
-        }
       }
     } catch (error) {
       console.error('sendUserMessage - Error:', error)

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { Message as VercelChatMessage, StreamingTextResponse } from 'ai'
+import {
+  Message as VercelChatMessage,
+  StreamingTextResponse,
+  OpenAIStream,
+} from 'ai'
 import { ChatOpenAI } from '@langchain/openai'
 import { PromptTemplate } from '@langchain/core/prompts'
 import { StringOutputParser } from '@langchain/core/output_parsers'
