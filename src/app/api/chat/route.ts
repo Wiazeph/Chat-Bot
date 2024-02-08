@@ -4,6 +4,7 @@ import { Message as VercelChatMessage, StreamingTextResponse } from 'ai'
 import { ChatOpenAI } from '@langchain/openai'
 import { PromptTemplate } from '@langchain/core/prompts'
 import { StringOutputParser } from '@langchain/core/output_parsers'
+import { RunnableSequence } from 'langchain/schema/runnable'
 
 export const runtime = 'edge'
 
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
 
     const outputParser = new StringOutputParser()
 
-    const chain = prompt.pipe(model).pipe(outputParser)
+    const chain = RunnableSequence.from([prompt, model, outputParser])
 
     const stream = await chain.stream({
       prompt: promptInput,

@@ -131,6 +131,7 @@ export default function Home() {
           'Content-Type': 'text/plain',
         },
       })
+      
 
       const data = await response.text()
 
