@@ -11,6 +11,14 @@ const formatMessage = (message: VercelChatMessage) => {
   return `${message.role}: ${message.content}`
 }
 
+const TEMPLATE = `{prompt}
+
+Current conversation:
+{chat_history}
+
+User: {input}
+AI:`
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -23,13 +31,6 @@ export async function POST(req: NextRequest) {
     const formattedPreviousMessages = messages.slice(0, -1).map(formatMessage)
     const messageContent = messages[messages.length - 1].content
 
-    const TEMPLATE = `{prompt}
-
-Current conversation:
-{chat_history}
-
-User: {input}
-AI:`
     const prompt = PromptTemplate.fromTemplate(TEMPLATE)
 
     const model = new ChatOpenAI({

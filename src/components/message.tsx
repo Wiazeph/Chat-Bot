@@ -1,9 +1,8 @@
 import React from 'react'
 
 type Props = {
-  index: number
   message: {
-    id: number
+    id: string
     role: string
     content: string
   }
