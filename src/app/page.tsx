@@ -9,16 +9,22 @@ import { cn } from '@/lib/utils'
 import MessageComponent from '@/components/messages'
 
 import { useChat } from 'ai/react'
+import type { AgentStep } from 'langchain/schema'
 
 export default function Home() {
-  const { messages, input, handleInputChange, setMessages, setInput } =
-    useChat()
-
   const [userOpenAIKey, setUserOpenAIKey] = useState<string>('')
   const [isKeyValid, setIsKeyValid] = useState<boolean>(false)
   const [oaiKeyValueDisplayed, setOaiKeyValueDisplayed] = useState<any>('')
   const [validatingKey, setValidatingKey] = useState<boolean>(false)
   const [promptMessage, setPromptMessage] = useState<any>('')
+
+  const { messages, input, setMessages, handleInputChange, handleSubmit } =
+    useChat({
+      key: userOpenAIKey,
+    })
+
+  const [showIntermediateSteps, setShowIntermediateSteps] = useState(false)
+
   const [display, setDisplay] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
@@ -59,93 +65,75 @@ export default function Home() {
   const sendPrompt = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    const systemPromptMessage = messages.concat({
-      id: messages.length.toString(),
-      role: 'user',
-      content: promptMessage,
-    })
-
-    setMessages(systemPromptMessage)
+    setPromptMessage(e.currentTarget.prompt.value)
 
     setDisplay(true)
-
-    try {
-      setIsLoading(true)
-
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        body: JSON.stringify({
-          openAIApiKey: userOpenAIKey,
-          prompt: promptMessage,
-          messages: systemPromptMessage,
-        }),
-        headers: {
-          'Content-Type': 'text/plain',
-        },
-      })
-
-      const data = await response.text()
-
-      if (response.status === 200) {
-        setMessages([
-          ...systemPromptMessage,
-          {
-            id: (messages.length + 1).toString(),
-            role: 'system',
-            content: data,
-          },
-        ])
-      }
-    } catch (error) {
-      console.error('sendPrompt - Error:', error)
-    } finally {
-      setIsLoading(false)
-    }
   }
 
-  const sendUserMessage = async (e: React.FormEvent<HTMLFormElement>) => {
+  const sendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    setInput('')
-
-    const userMessage = messages.concat({
-      id: messages.length.toString(),
-      role: 'user',
-      content: input,
-    })
-
-    setMessages(userMessage)
-
-    try {
-      setIsLoading(true)
-
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        body: JSON.stringify({
-          openAIApiKey: userOpenAIKey,
-          messages: userMessage,
-        }),
-        headers: {
-          'Content-Type': 'text/plain',
-        },
+    if (!showIntermediateSteps) {
+      handleSubmit(e)
+    } else {
+      const userMessage = messages.concat({
+        id: messages.length.toString(),
+        role: 'user',
+        content: input,
       })
 
-      const data = await response.text()
+      setMessages(userMessage)
 
-      if (response.status === 200) {
-        setMessages([
-          ...userMessage,
-          {
-            id: (messages.length + 1).toString(),
-            role: 'system',
-            content: data,
-          },
-        ])
+      try {
+        setIsLoading(true)
+
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          body: JSON.stringify({
+            messages: userMessage,
+          }),
+        })
+
+        const data = await response.json()
+
+        if (response.status === 200) {
+          const intermediateStepMessages = (data.intermediate_steps ?? []).map(
+            (intermediateStep: AgentStep, i: number) => {
+              return {
+                id: (userMessage.length + i).toString(),
+                content: JSON.stringify(intermediateStep),
+                role: 'system',
+              }
+            }
+          )
+
+          const newMessages = userMessage
+          for (const message of intermediateStepMessages) {
+            newMessages.push(message)
+            setMessages([...newMessages])
+          }
+
+          setMessages([
+            ...newMessages,
+            {
+              id: (
+                newMessages.length + intermediateStepMessages.length
+              ).toString(),
+              role: 'system',
+              content: data.output,
+            },
+          ])
+        } else {
+          if (data.error) {
+            console.error('sendMessage - data.error:', data.error)
+            throw new Error(data.error)
+          }
+        }
+      } catch (error) {
+        console.error('sendMessage - Error:', error)
+      } finally {
+        setIsLoading(false)
       }
-    } catch (error) {
-      console.error('sendUserMessage - Error:', error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -203,7 +191,7 @@ export default function Home() {
 
       <MessageComponent message={messages} isLoading={isLoading} />
 
-      <form onSubmit={sendUserMessage} className="Send-Message flex gap-x-4">
+      <form onSubmit={sendMessage} className="Send-Message flex gap-x-4">
         <Input
           type="text"
           name="message"
