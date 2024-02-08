@@ -4,11 +4,9 @@ import { useEffect, useState } from 'react'
 
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
 
-import MessageComponent from '@/components/message'
-import TypingComponent from '@/components/typing'
+import MessageComponent from '@/components/messages'
 
 import { useChat } from 'ai/react'
 
@@ -22,7 +20,7 @@ export default function Home() {
   const [validatingKey, setValidatingKey] = useState<boolean>(false)
   const [promptMessage, setPromptMessage] = useState<any>('')
   const [display, setDisplay] = useState<boolean>(false)
-  const [loading, setLoading] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   useEffect(() => {
     setMessages([
@@ -72,7 +70,7 @@ export default function Home() {
     setDisplay(true)
 
     try {
-      setLoading(true)
+      setIsLoading(true)
 
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -101,7 +99,7 @@ export default function Home() {
     } catch (error) {
       console.error('sendPrompt - Error:', error)
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
@@ -119,7 +117,7 @@ export default function Home() {
     setMessages(userMessage)
 
     try {
-      setLoading(true)
+      setIsLoading(true)
 
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -131,7 +129,6 @@ export default function Home() {
           'Content-Type': 'text/plain',
         },
       })
-      
 
       const data = await response.text()
 
@@ -148,7 +145,7 @@ export default function Home() {
     } catch (error) {
       console.error('sendUserMessage - Error:', error)
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
@@ -204,20 +201,7 @@ export default function Home() {
         </div>
       </div>
 
-      <ScrollArea className="Messages h-full rounded-md border p-4">
-        <div className="flex flex-col gap-y-6">
-          {messages.map((message: any, index: number) => (
-            <MessageComponent index={index} message={message} />
-          ))}
-
-          {loading && <TypingComponent />}
-        </div>
-        <div
-          ref={(scrollAreaRef) =>
-            scrollAreaRef?.scrollIntoView({ behavior: 'smooth' })
-          }
-        />
-      </ScrollArea>
+      <MessageComponent message={messages} isLoading={isLoading} />
 
       <form onSubmit={sendUserMessage} className="Send-Message flex gap-x-4">
         <Input
