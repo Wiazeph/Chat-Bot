@@ -27,8 +27,8 @@ export default function Home() {
     isLoading,
   } = useChat({
     body: {
-      prompt: promptMessage,
-      api_key: userOpenAIKey,
+      promptMessage: promptMessage,
+      OAIKey: userOpenAIKey,
     },
   })
 

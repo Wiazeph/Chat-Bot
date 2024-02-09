@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Message as VercelChatMessage, StreamingTextResponse } from 'ai'
 import { ChatOpenAI } from '@langchain/openai'
 import { PromptTemplate } from '@langchain/core/prompts'
-import { StringOutputParser } from '@langchain/core/output_parsers'
+import { HttpResponseOutputParser } from 'langchain/output_parsers'
 
 export const runtime = 'edge'
 
@@ -21,29 +21,29 @@ AI:`
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages, prompt, api_key } = await req.json()
+    const { messages, promptMessage, OAIKey } = await req.json()
 
     const formattedPreviousMessages = messages.slice(0, -1).map(formatMessage)
-    const messageContent = messages[messages.length - 1].content
+    const currentMessageContent = messages[messages.length - 1].content
 
-    const prompTemplate = PromptTemplate.fromTemplate(TEMPLATE)
+    const prompt = PromptTemplate.fromTemplate(TEMPLATE)
 
     const model = new ChatOpenAI({
       temperature: 0.9,
       modelName: 'gpt-3.5-turbo',
-      openAIApiKey: api_key,
+      openAIApiKey: OAIKey,
       maxTokens: 175,
       streaming: true,
     })
 
-    const outputParser = new StringOutputParser()
+    const outputParser = new HttpResponseOutputParser()
 
-    const chain = prompTemplate.pipe(model).pipe(outputParser)
+    const chain = prompt.pipe(model).pipe(outputParser)
 
     const stream = await chain.stream({
-      prompt: prompt,
+      prompt: promptMessage,
       chat_history: formattedPreviousMessages.join('\n'),
-      input: messageContent,
+      input: currentMessageContent,
     })
 
     return new StreamingTextResponse(stream)
