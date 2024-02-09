@@ -9,24 +9,28 @@ import { cn } from '@/lib/utils'
 import MessageComponent from '@/components/messages'
 
 import { useChat } from 'ai/react'
-import type { AgentStep } from 'langchain/schema'
 
 export default function Home() {
   const [userOpenAIKey, setUserOpenAIKey] = useState<string>('')
   const [isKeyValid, setIsKeyValid] = useState<boolean>(false)
   const [oaiKeyValueDisplayed, setOaiKeyValueDisplayed] = useState<any>('')
   const [validatingKey, setValidatingKey] = useState<boolean>(false)
-  const [promptMessage, setPromptMessage] = useState<any>('')
-
-  const { messages, input, setMessages, handleInputChange, handleSubmit } =
-    useChat({
-      key: userOpenAIKey,
-    })
-
-  const [showIntermediateSteps, setShowIntermediateSteps] = useState(false)
-
   const [display, setDisplay] = useState<boolean>(false)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [promptMessage, setPromptMessage] = useState<string>('')
+
+  const {
+    messages,
+    input,
+    setMessages,
+    handleInputChange,
+    handleSubmit,
+    isLoading,
+  } = useChat({
+    body: {
+      prompt: promptMessage,
+      api_key: userOpenAIKey,
+    },
+  })
 
   useEffect(() => {
     setMessages([
@@ -65,82 +69,16 @@ export default function Home() {
   const sendPrompt = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    setPromptMessage(e.currentTarget.prompt.value)
+    const promptMessage = e.currentTarget.prompt.value
+
+    setPromptMessage(promptMessage)
 
     setDisplay(true)
-  }
-
-  const sendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-
-    if (!showIntermediateSteps) {
-      handleSubmit(e)
-    } else {
-      const userMessage = messages.concat({
-        id: messages.length.toString(),
-        role: 'user',
-        content: input,
-      })
-
-      setMessages(userMessage)
-
-      try {
-        setIsLoading(true)
-
-        const response = await fetch('/api/chat', {
-          method: 'POST',
-          body: JSON.stringify({
-            messages: userMessage,
-          }),
-        })
-
-        const data = await response.json()
-
-        if (response.status === 200) {
-          const intermediateStepMessages = (data.intermediate_steps ?? []).map(
-            (intermediateStep: AgentStep, i: number) => {
-              return {
-                id: (userMessage.length + i).toString(),
-                content: JSON.stringify(intermediateStep),
-                role: 'system',
-              }
-            }
-          )
-
-          const newMessages = userMessage
-          for (const message of intermediateStepMessages) {
-            newMessages.push(message)
-            setMessages([...newMessages])
-          }
-
-          setMessages([
-            ...newMessages,
-            {
-              id: (
-                newMessages.length + intermediateStepMessages.length
-              ).toString(),
-              role: 'system',
-              content: data.output,
-            },
-          ])
-        } else {
-          if (data.error) {
-            console.error('sendMessage - data.error:', data.error)
-            throw new Error(data.error)
-          }
-        }
-      } catch (error) {
-        console.error('sendMessage - Error:', error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
   }
 
   return (
     <div className="p-6 w-full max-w-[95%] h-full max-h-[95%] flex flex-col gap-y-6 rounded-md bg-white border">
       <div className="text-center text-2xl font-medium">Chat Bot</div>
-
       <Input
         type="text"
         name="openApiKey"
@@ -189,20 +127,31 @@ export default function Home() {
         </div>
       </div>
 
-      <MessageComponent message={messages} isLoading={isLoading} />
+      <MessageComponent message={messages} />
 
-      <form onSubmit={sendMessage} className="Send-Message flex gap-x-4">
+      <form onSubmit={handleSubmit} className="Send-Message flex gap-x-4">
         <Input
           type="text"
           name="message"
           placeholder="Message"
-          disabled={!display}
           value={input}
           onChange={handleInputChange}
+          disabled={!display}
         />
 
-        <Button variant="outline" type="submit" disabled={!display}>
-          Send Message
+        <Button
+          variant="outline"
+          type="submit"
+          className="flex items-center gap-x-2"
+          disabled={!display}
+        >
+          <div>Send Message</div>
+          <div
+            className={cn(
+              'inline-block w-5 h-5 border-[3px] border-zinc-300 border-t-zinc-600 rounded-full animate-spin duration-700 ',
+              { hidden: !isLoading }
+            )}
+          ></div>
         </Button>
       </form>
     </div>

@@ -3,11 +3,9 @@ import React from 'react'
 import type { Message } from 'ai/react'
 
 import { ScrollArea } from './ui/scroll-area'
-import TypingComponent from './typing'
 
 type Props = {
   message: Message[]
-  isLoading: boolean
 }
 
 const MessagesComponent = (props: Props) => {
@@ -34,8 +32,6 @@ const MessagesComponent = (props: Props) => {
             </div>
           </div>
         ))}
-
-        {props.isLoading && <TypingComponent />}
       </div>
       <div
         ref={(scrollAreaRef) =>

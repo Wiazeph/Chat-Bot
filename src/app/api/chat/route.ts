@@ -21,31 +21,27 @@ AI:`
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
+    const { messages, prompt, api_key } = await req.json()
 
-    const promptInput = body.prompt
-
-    const messages = body.messages ?? []
     const formattedPreviousMessages = messages.slice(0, -1).map(formatMessage)
     const messageContent = messages[messages.length - 1].content
 
-    console.log('promptInput:', promptInput)
-
-    const prompt = PromptTemplate.fromTemplate(TEMPLATE)
+    const prompTemplate = PromptTemplate.fromTemplate(TEMPLATE)
 
     const model = new ChatOpenAI({
       temperature: 0.9,
       modelName: 'gpt-3.5-turbo',
+      openAIApiKey: api_key,
       maxTokens: 175,
       streaming: true,
     })
 
     const outputParser = new StringOutputParser()
 
-    const chain = prompt.pipe(model).pipe(outputParser)
+    const chain = prompTemplate.pipe(model).pipe(outputParser)
 
     const stream = await chain.stream({
-      prompt: promptInput,
+      prompt: prompt,
       chat_history: formattedPreviousMessages.join('\n'),
       input: messageContent,
     })
