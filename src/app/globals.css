@@ -64,48 +64,43 @@
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
   }
-}
 
-@layer base {
+  /* ... */
+
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-zinc-100 text-foreground;
+    @apply h-dvh px-6 py-12 bg-background text-foreground;
   }
 }
 
-/* */
-
-@layer base {
-  body {
-    @apply p-8 h-dvh flex items-center justify-center;
+@layer utilities {
+  .validatingKey {
+    background: linear-gradient(
+      to right,
+      rgb(182, 182, 182),
+      rgb(160, 160, 160),
+      rgb(146, 146, 146),
+      rgb(135, 135, 135),
+      rgb(146, 146, 146),
+      rgb(160, 160, 160),
+      rgb(182, 182, 182)
+    );
+    background-size: 200% 100%;
+    animation: validatingKey 2s infinite ease-in-out;
   }
-}
 
-.validatingKey {
-  background: linear-gradient(
-    to right,
-    rgb(182, 182, 182),
-    rgb(160, 160, 160),
-    rgb(146, 146, 146),
-    rgb(135, 135, 135),
-    rgb(146, 146, 146),
-    rgb(160, 160, 160),
-    rgb(182, 182, 182)
-  );
-  background-size: 200% 100%;
-  animation: validatingKey 2s infinite ease-in-out;
-}
-
-@keyframes validatingKey {
-  0% {
-    background-position: 0 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0 50%;
+  @keyframes validatingKey {
+    0% {
+      background-position: 0 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0 50%;
+    }
   }
 }

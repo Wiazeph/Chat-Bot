@@ -12,8 +12,8 @@ import { useChat } from 'ai/react'
 
 export default function Home() {
   const [userOpenAIKey, setUserOpenAIKey] = useState<string>('')
+  const [oaiKeyValueDisplayed, setOaiKeyValueDisplayed] = useState<string>('')
   const [isKeyValid, setIsKeyValid] = useState<boolean>(false)
-  const [oaiKeyValueDisplayed, setOaiKeyValueDisplayed] = useState<any>('')
   const [validatingKey, setValidatingKey] = useState<boolean>(false)
   const [display, setDisplay] = useState<boolean>(false)
   const [promptMessage, setPromptMessage] = useState<string>('')
@@ -47,16 +47,17 @@ export default function Home() {
   useEffect(() => {
     setOaiKeyValueDisplayed(userOpenAIKey)
 
-    if (userOpenAIKey.length > 49) {
+    if (userOpenAIKey.length > 50) {
       setValidatingKey(true)
       fetch(`/api/test_api?key=${userOpenAIKey}`)
         .then((response) => response.json())
         .then((data) => {
-          setIsKeyValid(data.status)
           if (data.status) {
+            setIsKeyValid(true)
             setValidatingKey(false)
             setOaiKeyValueDisplayed(userOpenAIKey.replace(/./g, '*'))
           } else {
+            setIsKeyValid(false)
             setOaiKeyValueDisplayed(userOpenAIKey)
           }
         })
@@ -66,7 +67,7 @@ export default function Home() {
     }
   }, [userOpenAIKey])
 
-  const sendPrompt = async (e: React.FormEvent<HTMLFormElement>) => {
+  const setPrompt = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
     const promptMessage = e.currentTarget.prompt.value
@@ -77,40 +78,52 @@ export default function Home() {
   }
 
   return (
-    <div className="p-6 w-full max-w-[95%] h-full max-h-[95%] flex flex-col gap-y-6 rounded-md bg-white border">
-      <div className="text-center text-2xl font-medium">Chat Bot</div>
-      <Input
-        type="text"
-        name="openApiKey"
-        placeholder="OpenAI API Key"
-        className={cn(
-          isKeyValid
-            ? 'border-green-400 bg-green-400'
-            : 'border-red-300 bg-red-300',
-          validatingKey && 'validatingKey'
-        )}
-        value={oaiKeyValueDisplayed}
-        onChange={(e) => setUserOpenAIKey(e.target.value)}
-        disabled={isKeyValid ? true : false}
-      />
+    <div className="Chat-Bot container p-6 h-full flex flex-col gap-y-6 border">
+      <div className="Title text-center text-4xl font-semibold">Chat Bot</div>
 
-      <form onSubmit={sendPrompt} className="flex gap-x-4">
-        <Input
-          type="text"
-          name="prompt"
-          placeholder="Prompt"
-          disabled={!isKeyValid || display}
-          value={promptMessage}
-          onChange={(e) => setPromptMessage(e.target.value)}
-        />
+      <div className="flex gap-x-4">
+        <div className="w-2/5 space-y-1">
+          <small>OpenAI API Key:</small>
 
-        <Button
-          type="submit"
-          disabled={!isKeyValid || promptMessage === '' || display}
-        >
-          Send Prompt
-        </Button>
-      </form>
+          <Input
+            type="text"
+            name="openApiKey"
+            placeholder="OpenAI API Key"
+            className={cn(
+              'Key-Input',
+              isKeyValid ? 'border-green-400' : 'border-red-300',
+              validatingKey && 'validatingKey'
+            )}
+            value={oaiKeyValueDisplayed}
+            onChange={(e) => setUserOpenAIKey(e.target.value)}
+            disabled={isKeyValid ? true : false}
+          />
+        </div>
+
+        <div className="w-3/5 space-y-1">
+          <small>Prompt:</small>
+
+          <form onSubmit={setPrompt} className="Prompt-Form flex gap-x-4">
+            <Input
+              type="text"
+              name="prompt"
+              placeholder="Prompt"
+              className="Prompt-Input"
+              value={promptMessage}
+              onChange={(e) => setPromptMessage(e.target.value)}
+              disabled={!isKeyValid || display}
+            />
+
+            <Button
+              type="submit"
+              className="Prompt-Button"
+              disabled={!isKeyValid || promptMessage === '' || display}
+            >
+              Set Prompt
+            </Button>
+          </form>
+        </div>
+      </div>
 
       <div className="Sample-Prompts text-sm text-center flex flex-col items-center gap-y-2 border rounded-md p-4">
         <div className="flex items-center gap-x-2">
@@ -129,11 +142,12 @@ export default function Home() {
 
       <MessageComponent message={messages} />
 
-      <form onSubmit={handleSubmit} className="Send-Message flex gap-x-4">
+      <form onSubmit={handleSubmit} className="Message-Form flex gap-x-4">
         <Input
           type="text"
           name="message"
           placeholder="Message"
+          className="Message-Input"
           value={input}
           onChange={handleInputChange}
           disabled={!display}
@@ -142,13 +156,13 @@ export default function Home() {
         <Button
           variant="outline"
           type="submit"
-          className="flex items-center gap-x-2"
+          className="Message-Button flex items-center gap-x-2"
           disabled={!display}
         >
           <div>Send Message</div>
           <div
             className={cn(
-              'inline-block w-5 h-5 border-[3px] border-zinc-300 border-t-zinc-600 rounded-full animate-spin duration-700 ',
+              'inline-block w-5 h-5 border-[3px] border-zinc-300 border-t-zinc-800 rounded-full animate-spin duration-700 ',
               { hidden: !isLoading }
             )}
           ></div>

@@ -12,7 +12,7 @@ const MessagesComponent = (props: Props) => {
   return (
     <ScrollArea className="Messages h-full rounded-md border p-4">
       <div className="flex flex-col gap-y-6">
-        {props.message.map((m) => (
+        {props.message.map((m, index) => (
           <div
             key={m.id}
             className={`flex gap-x-4 ${
@@ -21,7 +21,7 @@ const MessagesComponent = (props: Props) => {
                 : 'System max-w-[60%]'
             }`}
           >
-            {m.role === 'system' && (
+            {index % 2 === 0 && (
               <div className="h-12 w-12 rounded-full border flex items-center justify-center shrink-0">
                 AI
               </div>
@@ -33,6 +33,7 @@ const MessagesComponent = (props: Props) => {
           </div>
         ))}
       </div>
+
       <div
         ref={(scrollAreaRef) =>
           scrollAreaRef?.scrollIntoView({ behavior: 'smooth' })
