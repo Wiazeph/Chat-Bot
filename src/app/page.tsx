@@ -78,7 +78,7 @@ export default function Home() {
   }
 
   return (
-    <div className="Chat-Bot container p-6 h-full flex flex-col gap-y-6 border">
+    <div className="Chat-Bot p-8 h-full flex flex-col gap-y-6">
       <div className="Title text-center text-4xl font-semibold">Chat Bot</div>
 
       <div className="flex gap-x-4">
@@ -88,9 +88,9 @@ export default function Home() {
           <Input
             type="text"
             name="openApiKey"
-            placeholder="OpenAI API Key"
+            placeholder="Verify your OpenAI API Key"
             className={cn(
-              'Key-Input',
+              'Key-Input px-4 h-12',
               isKeyValid ? 'border-green-400' : 'border-red-300',
               validatingKey && 'validatingKey'
             )}
@@ -107,16 +107,17 @@ export default function Home() {
             <Input
               type="text"
               name="prompt"
-              placeholder="Prompt"
-              className="Prompt-Input"
+              placeholder="Write your Prompt"
+              className="Prompt-Input px-4 h-12"
               value={promptMessage}
               onChange={(e) => setPromptMessage(e.target.value)}
               disabled={!isKeyValid || display}
             />
 
             <Button
+              variant="secondary"
               type="submit"
-              className="Prompt-Button"
+              className="Prompt-Button h-12"
               disabled={!isKeyValid || promptMessage === '' || display}
             >
               Set Prompt
@@ -147,22 +148,22 @@ export default function Home() {
           type="text"
           name="message"
           placeholder="Message"
-          className="Message-Input"
+          className="Message-Input px-4 h-12"
           value={input}
           onChange={handleInputChange}
           disabled={!display}
         />
 
         <Button
-          variant="outline"
+          variant="secondary"
           type="submit"
-          className="Message-Button flex items-center gap-x-2"
+          className="Message-Button flex items-center gap-x-2.5 h-12"
           disabled={!display}
         >
           <div>Send Message</div>
           <div
             className={cn(
-              'inline-block w-5 h-5 border-[3px] border-zinc-300 border-t-zinc-800 rounded-full animate-spin duration-700 ',
+              'inline-block w-5 h-5 border-[3px] border-zinc-300 border-t-zinc-700 rounded-full animate-spin duration-700',
               { hidden: !isLoading }
             )}
           ></div>

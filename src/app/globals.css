@@ -72,7 +72,7 @@
   }
 
   body {
-    @apply h-dvh px-6 py-12 bg-background text-foreground;
+    @apply h-dvh bg-background text-foreground;
   }
 }
 
