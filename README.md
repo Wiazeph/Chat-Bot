@@ -1,3 +1,25 @@
+# Chat-Bot
+
+<br>
+
+Application that turns into a Chat-Bot by entering the OpenAI API Key and Prompt. You can create your own AI Chat-Bot and get answers according to the prompt you enter. In this way, you can even create a personal assistant.
+
+<br>
+
+## Technologies, Tools or Packages Used
+
+[Next.js](https://nextjs.org/) + [Langchain](https://www.langchain.com/) + [Open AI API](https://platform.openai.com/docs/overview) + [Vercel AI](https://sdk.vercel.ai/docs) + [Tailwind CSS](https://tailwindcss.com/) + [Shadcn UI](https://ui.shadcn.com/) + [string_decoder](https://www.npmjs.com/package/string_decoder)
+
+<br>
+
+## Features
+
+- OpenAI API Key can be verified and made ready for prompt entry
+- With the prompt, it can be said how the Chat-Bot should behave.
+- Responses are received according to the entered prompt.
+
+<br><br>
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
